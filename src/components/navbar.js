@@ -9,6 +9,7 @@ import Toolbar from '@material-ui/core/Toolbar'
 import List from '@material-ui/core/List'
 import Typography from '@material-ui/core/Typography'
 import Divider from '@material-ui/core/Divider'
+import Button from '@material-ui/core/Button'
 import IconButton from '@material-ui/core/IconButton'
 import MenuIcon from '@material-ui/icons/Menu'
 import ChevronLeftIcon from '@material-ui/icons/ChevronLeft'
@@ -53,13 +54,14 @@ const styles = theme => ({
   },
   menuButton: {
     marginLeft: 12,
-    marginRight: 36,
+    marginRight: 16,
   },
   menuButtonHidden: {
     display: 'none',
   },
   title: {
     flexGrow: 1,
+    marginLeft: 20,
   },
   drawerPaper: {
     position: 'relative',
@@ -133,7 +135,7 @@ const styles = theme => ({
   },
 })
 
-class Dashboard extends Component {
+class Navbar extends Component {
   state = {
     open: false,
     anchorEl: null,
@@ -162,6 +164,51 @@ class Dashboard extends Component {
 
   handleMobileMenuClose = () => {
     this.setState({ mobileMoreAnchorEl: null })
+  }
+
+  handleSignIn = () => {
+    this.handleMobileMenuClose()
+    this.props.history.push('/signin')
+  }
+
+  handleGoToDashboard = () => {
+    this.handleMobileMenuClose()
+    this.props.history.push('/dashboard')
+  }
+
+  handleGoToAdmin = () => {
+    this.handleMobileMenuClose()
+    this.props.history.push('/admin')
+  }
+
+  handleGoToAccount = () => {
+    this.handleMobileMenuClose()
+    this.props.history.push('/account')
+  }
+
+  handleSignOut = () => {
+    localStorage.removeItem('jwtToken')
+    localStorage.removeItem('username')
+    localStorage.removeItem('name')
+    window.location.reload()
+  }
+
+  componentWillMount() {
+    if (localStorage.getItem('jwtToken')) {
+      this.setState({ isSignedIn: true, anchorEl: null })
+    } else {
+      this.setState({ isSignedIn: false, anchorEl: null })
+    }
+
+    var session = JSON.parse(localStorage.getItem('session'));
+    if(session && session.user) {
+      this.setState({ 
+        name: session.user.name,
+        email: session.user.email,
+        photo: session.user.photo,
+        isAdminUser: (session.user.admin === true) ? true : false
+      })
+    }
   }
 
   render() {
@@ -246,14 +293,27 @@ class Dashboard extends Component {
                   }}
                 />
               </div>
-              <IconButton
-                aria-owns={isMenuOpen ? 'material-appbar' : null}
-                aria-haspopup="true"
-                onClick={this.handleProfileMenuOpen}
-                color="inherit"
-              >
-                <AccountCircle />
-              </IconButton>
+              {this.state.isSignedIn === true ? (
+                <IconButton
+                  aria-owns={isMenuOpen ? 'material-appbar' : null}
+                  aria-haspopup="true"
+                  onClick={this.handleProfileMenuOpen}
+                  color="inherit"
+                >
+                  <AccountCircle />
+                </IconButton>
+              ) : (
+                <Button
+                  onClick={this.handleSignIn}
+                  style={{ color: '#FFF', borderColor: '#FFF' }}
+                  variant="outlined"
+                  color="primary"
+                  size="small"
+                  className={classes.button}
+                >
+                  Sign In
+                </Button>
+              )}
             </Toolbar>
           </AppBar>
           {renderMenu}
@@ -286,8 +346,8 @@ class Dashboard extends Component {
   }
 }
 
-Dashboard.propTypes = {
+Navbar.propTypes = {
   classes: PropTypes.object.isRequired,
 }
 
-export default withStyles(styles)(Dashboard)
+export default withStyles(styles)(Navbar)
